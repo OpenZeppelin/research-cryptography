@@ -14,7 +14,7 @@ It will also serve as the basis for a _Cryptography for Blockchain Developers_ s
 **TODO:** Insert link to `concept_map.jpg` once this repo is online.
 
 * Core Concepts
-   * Philosophy
+   * [Philosophy](concepts/Philosophy.md)
    * Hash Functions
    * Merkle Trees
    * Proof of Work
