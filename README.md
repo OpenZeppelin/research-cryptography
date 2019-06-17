@@ -12,3 +12,22 @@ It will also serve as the basis for a _Cryptography for Blockchain Developers_ s
 ## Concepts
 
 **TODO:** Insert link to `concept_map.jpg` once this repo is online.
+
+* Core Concepts
+   * Philosophy
+   * Hash Functions
+   * Merkle Trees
+   * Proof of Work
+   * Digital Signatures
+   * Elliptic Curves
+   * ECDSA
+   * Ethereum
+* Optional
+   * IPFS
+   * Hierarchical Deterministic Wallets
+   * Hash Commitments
+   * RSA Accumulators
+   * Verifiable Delay Functions
+   * Zero Knowledge Proofs
+   * ZK Rollup
+   * ZK ZK Rollup
