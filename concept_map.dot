@@ -1,0 +1,47 @@
+// NOTE: Recreate the graph whenever you edit this file:
+// dot -Tjpg concept_map.dot -o concept_map.jpg (requires graphviz to be installed)
+
+digraph {
+    node[shape=box];
+
+    // Core
+    Philosophy;
+    HashFunctions[label="Hash Functions"];
+    MerkleTrees[label="Merkle Trees"];
+    DigitalSignatures[label="Digital Signatures"];
+    EllipticCurves[label="Elliptic Curves"];
+    ECDSA;
+    ProofOfWork[label="Proof of Work"];
+    Ethereum;
+
+    // Optional
+    node[style=filled];
+    HDWallets[label="Hierarchical Deterministic Wallets"];
+    IPFS;
+    HashCommitments[label="Hash Commitments"];
+
+    // Unsorted ( understanding these better would let us identify the prerequisites )
+    node[fillcolor=turquoise];
+    RSAAccumulators[label="RSA Accumulators"];
+    ZKP[label="Zero Knowledge Proofs"];
+    ZKRollup[label="ZK Rollup"];
+    ZKZKRollup[label="ZK ZK Rollup"];
+    VDF[label="Verifiable Delay Functions"];
+
+    // Prerequisites
+    HashFunctions -> Philosophy;
+    MerkleTrees -> HashFunctions;
+    DigitalSignatures -> HashFunctions;
+    ProofOfWork -> HashFunctions;
+    EllipticCurves -> Philosophy;
+    ECDSA -> EllipticCurves;
+    ECDSA -> DigitalSignatures;
+    Ethereum -> ECDSA;
+    Ethereum -> MerkleTrees;
+    Ethereum -> ProofOfWork;
+    HashCommitments -> HashFunctions;
+    IPFS -> MerkleTrees;
+    HDWallets -> ECDSA;
+    ZKRollup -> ZKP;
+    ZKZKRollup -> ZKRollup;
+}

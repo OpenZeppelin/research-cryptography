@@ -8,3 +8,7 @@ The OpenZeppelin Research team would like to increase the cryptographic expertis
 This repository will be used to manage the project by tracking explanations, open questions and learning resources.
 
 It will also serve as the basis for a _Cryptography for Blockchain Developers_ series of articles that will teach a generic programmer everything they need to know about cryptography as it used in blockchain applications.
+
+## Concepts
+
+**TODO:** Insert link to `concept_map.jpg` once this repo is online.
