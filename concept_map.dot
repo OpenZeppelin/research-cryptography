@@ -19,6 +19,8 @@ digraph {
     HDWallets[label="Hierarchical Deterministic Wallets"];
     IPFS;
     HashCommitments[label="Hash Commitments"];
+    MultiSig[label="Multi-signature Wallets"];
+    SecretSharing[label="Shamir's Secret Sharing Scheme"];
 
     // Unsorted ( understanding these better would let us identify the prerequisites )
     node[fillcolor=turquoise];
@@ -39,6 +41,8 @@ digraph {
     Ethereum -> ECDSA;
     Ethereum -> MerkleTrees;
     Ethereum -> ProofOfWork;
+    MultiSig -> ECDSA;
+    SecretSharing -> MultiSig;
     HashCommitments -> HashFunctions;
     IPFS -> MerkleTrees;
     HDWallets -> ECDSA;
