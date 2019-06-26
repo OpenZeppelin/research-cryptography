@@ -26,6 +26,8 @@ It will also serve as the basis for a _Cryptography for Blockchain Developers_ s
    * IPFS
    * Hierarchical Deterministic Wallets
    * Hash Commitments
+   * MultiSig Wallets
+   * Shamir's Secret Sharing Scheme
    * RSA Accumulators
    * Verifiable Delay Functions
    * Zero Knowledge Proofs
