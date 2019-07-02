@@ -11,7 +11,7 @@ It will also serve as the basis for a _Cryptography for Blockchain Developers_ s
 
 ## Concepts
 
-**TODO:** Insert link to `concept_map.jpg` once this repo is online.
+![Blockchain Cryptography Concept Map](https://github.com/ZeppelinAudits/cryptography-research/blob/master/concept_map.jpg)
 
 * Core Concepts
    * [Philosophy](concepts/Philosophy.md)
