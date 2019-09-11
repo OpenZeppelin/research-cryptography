@@ -1,2 +1,5 @@
 # IntelliJ IDE
 .idea
+
+# Mac File System
+*/.DS_Store

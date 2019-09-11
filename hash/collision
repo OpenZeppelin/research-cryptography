@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+
+from sys import argv, exit
+from Crypto.Hash import keccak
+from random import randint
+
+def keccak40(preimage):
+  # compute keccak256
+  keccak256 = keccak.new(digest_bits=256)
+  preimage = bytes(preimage, 'utf-8') if type(preimage == 'str') else preimage
+  keccak256.update(preimage) 
+  hash256 = keccak256.digest()
+
+  # modify it to get keccak40
+  # Use byte 1 then bytes 15-17 in reverse order, then byte 4
+  hash40 = hash256[1:2] + hash256[17:14:-1] + hash256[4:5]
+  return hash40
+
+hashes = {}
+while(True):
+  r = randint(1, 1<<48)
+  preimage = 'nikesh:{}'.format(r)
+  h = keccak40(preimage)
+  if (h in hashes) and not(hashes[h] == preimage):
+    print('Collision: {} and {}'.format(hashes[h], preimage))
+    break
+
+  hashes[h] = preimage
+
