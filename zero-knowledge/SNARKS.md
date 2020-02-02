@@ -336,8 +336,258 @@ If you multiply all functions together, the divisor simplifies to _n * \[P+Q] - 
 
 The "final exponentiation" step is to take the result of the function and raise it to the power of _z= (p<sup>12</sup> - 1) / n_. 
 
+
 ### References
 
 * [An excellent article](https://blog.ethereum.org/2016/12/05/zksnarks-in-a-nutshell/) that heavily informed this research.
 
 * [Another article by Vitalik](https://medium.com/@VitalikButerin/quadratic-arithmetic-programs-from-zero-to-hero-f6d558cea649)
+
+
+## Another article
+
+The process of working through these articles has given me some intuition, but not enough that I can explain it clearly to someone without following the exact same steps. Let's summarize [this article](https://blockgeeks.com/guides/what-is-zksnarks/), which seems to be at a higher level. Perhaps this will cement my thinking.
+
+
+### Properties of a zero-knowledge proof
+* Completeness: an honest prover can convince an honest verifier of a true statement
+* Soundness: a dishonest prover cannot convince an honest verifier of a false statement
+* Zero knowledge: the verifier cannot learn anything other than the statement is true
+
+#### Trivial Examples
+* They explain the Alibaba cave, waldo and sudoku examples. I already understand them so I won't bother summarizing
+
+#### What are we proving
+* There is a difference between proving a statement and proving knowledge of a value.
+* In the blockchain world we care about proving knowledge (specifically, the knowledge of a private key)
+
+
+### Schnorr Identification Protocol
+* Anna wants to prove that she knows the private key `s` associated with a given public key `v`.
+* Everyone knows
+   * a prime `p`, 
+   * `q`, a factor of `p-1`
+   * a generator `a` with cycle length `q`
+* Anna claims to know `s`
+* v = a<sup>-s</sup> mod q
+
+* Anna encrypts a random `r`:
+   * X = ar mod p
+* She calculates a value that depends on this and a message `M`:
+   * e = H ( M || X)
+* She calculates a signature that depends on `r`, `s` and `e`:
+   * y = r + s * e mod q
+* She sends `M`, `e` and `y` to Carl
+   * since `r` is private, this does not reveal `s`
+* Carl can compute:
+   * X' = a<sup>y</sup> * v<sup>e</sup><br>
+        = a<sup>r</sup>a<sup>se</sup>a<sup>-se</sup><br>
+        = X
+* This only works because Anna was able to produce `y`, which depends on knowing `s`
+
+### Fiat-Shamir
+* There is a group with generator `g` (mod p is implied for the rest of this section)
+* Anna wants to prove she knows `x` such that <code>y = g<sup>x</sup></code> 
+* She picks a random `v` and computes <code>t =  g<sup>v</sup></code> 
+* Carl picks a random challenge `c`
+* Anna computes `r = v - c*x` and gives `r` to Carl
+* Carl checks if <code>t == g<sup>r</sup> * y<sup>c</sup></code>
+
+I think this will be clearer if we distinguish <span style="color:red">encrypted values</span> from <span style="color:green">plaintext values</span>:
+* Recall, within the encrypted space, anyone can add values and multiply by scalars
+* Everyone knows <span style="color:red">x</span> and Anna wants to prove she knows <span style="color:green">x</span>
+* Anna generates a random <span style="color:green">v</span> and sends Carl <span style="color:red">v</span>
+* Carl sends Anna <span style="color:green">c</span>
+* At this point, Anna can calculate <span style="color:green">v - cx</span> iff she knows <span style="color:green">x</span>. Carl can do the same calculation in the encrypted space <span style="color:red">v - cx</span>
+* Anna returns the result <span style="color:green">v - cx</span> and Carl confirms it encrypts to his calculation
+
+#### Making it non-interactive
+* This protocol relies on Carl choosing a value that Anna could not predict. The implication seems to be that premature knowledge of <span style="color:green">c</span> would let her choose  <span style="color:green">v</span> in a way that doesn't require knowledge of <span style="color:green">x</span>. I haven't been able to figure out the attack yet.
+* We could make this non-interactive by having Anna use the hash of (g, <span style="color:red">x</span> and <span style="color:red">v</span>). This ensures she chose `v` before `c`
+
+### zkSNARKS
+* The rest of the article explains zkSNARKs by just asserting the existence of proving and verifying algorithms. There is no information here to be learned.
+
+## The ZCash explainer series
+
+Here is [another resource that seems to have some details](https://electriccoin.co/blog/snark-explain/)
+
+### Homomorphic Hidings
+
+This is just making the same point about the ability to perform operations on encrypted data.
+* It is possible to calculate E(x+y) from E(x) and E(y)
+* This follows directly if we use the discrete log problem as the encryption operation c = g<sup>x</sup> mod p
+* Then E(x)•E(y) = g<sup>x</sup>g<sup>y</sup> = g<sup>x+y</sup>
+* It is also possible to multiply by a scalar: E(x)<sup>c</sup> = g<sup>cx</sup> = E(cx)
+
+### Blind Evaluation of polynomials
+* Suppose:
+   * Alice knows a polynomial P defined over a field F and Bob knows a point in the field s
+   * Bob wants to learn E(P(s)) without revealing s (and Alice will not reveal P)
+* They can solve this problem with the homomorphic hidings:
+   * Bob sends Alice E(1), E(s), E(s<sup>2</sup>), ... , E(s<sup>d</sup>). Note that this is the encrypted version of all x<sup>n</sup> evaluated at s.
+   * Alice uses the homomorphic hiding property to calculate E(P(s)) and sends it to Bob.
+* The general idea is that Bob is a verifier with a "correct" polynomial in mind, and he wants to check if Alice knows it. If she doesn't know it, she will be unable to produce E(P(s)). We don't want Alice to send P directly to Bob because it's very large. Of course, the set of E(s<sup>n</sup>) values that Bob sends is just as large but in practice we hard-code it into the protocol. 
+
+### Knowledge of Coefficient Test
+* The way I described the protocol implies that Bob knows P, so he can just compare the E(P(s)) value with one he calculates himself
+* This section of the blog claims that Bob can't tell if Alice sends him something other that E(P(s)). I'm not sure what the resolution is, but let's go with it for now. It is probably something about Bob having a "correct" polynomial in mind is not the same as saying he actually knows the polynomial.
+* We are going to build a Knowledge of Coefficient (KC) Test to help confirm Alice is following the protocol.
+* Notational conventions:
+   * we will describe our group additively from now on:
+       * our encryption is now: E(x) = x⋅g 
+       * E(x) + E(y) = x⋅g + y⋅g = (x+y)⋅g = E(x+y)
+       * cE(x) = cx⋅g = E(cx)
+   * a pair of group elements (a, α⋅a) is an α-pair (assuming neither value is zero)
+* The KC test
+   * Bob chooses a random a and α and sends (a, α⋅a) to Alice
+   * Alice must respond with a different α-pair
+      * note: she doesn't know α so she can't pick a new pair directly
+      * she can pick some non-zero γ and respond with Bob's pair, with each coordinate multiplied by γ ie. (γ⋅a, γ⋅α⋅a)
+   * Since Bob knows α he can check this directly
+   * Bob will assume that Alice calculated the value from his own value. In other words, he believes that Alice knows γ
+
+### Verifiable blind polynomial evaluation
+* We want to recreate the "blind evaluation of a polynomial" scheme but also prevent Alice from responding with anything other than E(P(s))
+* In the original KC test, Alice had to derive an α-pair from the one that Bob sent
+* What if Bob sends several α-pairs. Can she use the pairs to derive another one? Yes, any linear combination of the pairs will produce another pair. Note that this is a more general version of the original process.
+* As before, Bob will assume that this is how Alice was able to produce a pair - he now believes that Alice knows the linear combination of his original pairs.
+
+The protocol:
+* Bob sends Alice E(1), E(s), E(s<sup>2</sup>), ..., E(s<sup>d</sup>)  \[ in practice these are hardcoded in the protocol ]
+* Bob chooses a random α and sends Alice E(α), E(αs), E(αs<sup>2</sup>), ..., E(αs<sup>d</sup>)
+* Note: this is the same as saying, Bob gives Alice a bunch of α-pairs (E(1), αE(1)), (E(s), αE(s)), ... (E(s<sup>d</sup>), αE(s<sup>d</sup>))
+* Alice uses these values to compute E(P(s)) and E(αP(s)) and sends both to Bob
+* Bob checks that they are an α-pair
+* Bob now believes that Alice responded with some linear combination of the original pairs he sent. Since those values were the hidings of the powers of s, this means she responded with a hiding of a polynomial in s.
+* **Note: as far as I can tell, we're not saying anything about what the particular polynomial is**
+
+
+### Polynomials representing computations
+* This is the same QAP discussion we've already seen but it uses different terminology
+* Personally, I find Vitalik's post easier to understand but I'll go through the example anyway to cement the idea
+
+We would like to translate a computation into a Quadratic Arithmetic Program (QAP), which is a set of polynomials in multiple variables. Each polynomial is at most quadratic in all the variables. This constraint can be enforced by describing the program as a series of gates that combine two variables with either addition or multiplication.
+
+For example, let's assume Alice wants to prove she knows three constants c that satisfy the equation:
+(c<sub>1</sub>⋅c<sub>2</sub>)(c<sub>1</sub> + c<sub>3</sub>) = 7
+
+This corresponds to the constraints:
+* c<sub>4</sub> = c<sub>1</sub>⋅c<sub>2</sub>
+* c<sub>5</sub> = c<sub>4</sub>⋅(c<sub>1</sub> + c<sub>3</sub>)
+
+Note that each constraint has exactly one multiplication. We can think of each constraint as a gate with three parts: 
+1. the input to the left of the multiplication
+1. the input to the right of the multiplication
+1. the output 
+
+
+Alice needs to prove that she knows values (c<sub>1</sub>,...,c<sub>5</sub>) such that c<sub>5</sub>=7. Note that this external requirement (that c<sub>5</sub>=7) can be modeled as an additional constraint.
+
+#### Reduction to QAP
+
+We associate each constraint with a field element (the first equation is associated with the number 1, the second equation with the number 2). The elements {1,2} are our target points.
+
+We now produce a set of polynomials that are either 0 or 1 on the target points. Each polynomial corresponds to one of the variables and one component (left, right or output) and the values at the target points correspond to whether it matches the constraint:
+* Constraint one matches the function 2 - X  (it is 1 at target point 1 and 0 at target point 2)
+   *  L<sub>1</sub> = R<sub>2</sub> = O<sub>4</sub> = 2 - X
+   * c<sub>1</sub> is on the left, c<sub>2</sub> is on the right, c<sub>4</sub> is the output of constraint 1
+* Constraint two matches the function X - 1 (it is 0 at target point 1 and 1 at target point 2)
+   * L<sub>4</sub> = R<sub>1</sub> = R<sub>3</sub> = O<sub>5</sub> = X - 1
+   * c<sub>4</sub> is on the left, c<sub>1</sub> and c<sub>3 </sub> are on the right, c<sub>5</sub> is the output of constraint 2
+* All other functions are zero
+   * eg. c<sub>2</sub> is not on the left of either constraint so L<sub>2</sub>(1) = L<sub>2</sub>(2) = 0
+
+Now we can define:
+* L = ∑<sub>i</sub> c<sub>i</sub>⋅L<sub>i</sub> = c<sub>1</sub>⋅(2-X) + c<sub>4</sub>⋅(X-1)
+* R = ∑<sub>i</sub> c<sub>i</sub>⋅R<sub>i</sub> = c<sub>1</sub>⋅(X-1) + c<sub>2</sub>⋅(2-X) + c<sub>3</sub>⋅(X-1)
+* O = ∑<sub>i</sub> c<sub>i</sub>⋅O<sub>i</sub> = c<sub>4</sub>⋅(2-X) + c<sub>5</sub>⋅(X-1)
+
+The polynomial that captures all of these constraints is:
+P = L⋅R - O
+
+Note that each target point reproduces the original constraints
+* P(1) = c<sub>1</sub>⋅c<sub>2</sub> - c<sub>4</sub>
+* P(2) = c<sub>4</sub>⋅(c<sub>1</sub> + c<sub>3</sub>) - c<sub>5</sub>
+
+So P has zeroes on the target point iff c<sub>1</sub> to c<sub>5</sub> are set correctly.
+
+If we factor P, each factor corresponds to one of the zeroes. So we can define the target polynomial as one that zeroes all target points: T(X) = (X - 1)⋅(X - 2). This will divide P iff c<sub>1</sub> to c<sub>5</sub> are set correctly.
+
+### The Pinocchio Protocol
+
+Recall, if Alice knows a satisfying assignment for the c values, then P can be factored into polynomials H and T. 
+Naturally, this equality will hold at any x coordinate `s`: P(s) = H(s)⋅T(s). On the other hand, if Alice does not know a satisfying assignment (and `p` is much larger than 2d, the maximum degree of P) this equality will almost certainly not hold at a randomly chosen x coordinate.
+
+So the protocol is:
+1. Alice chooses the polynomials L, R, O and H of degree `d` at most
+1. Bob chooses a random point s and computes E(T(s))
+1. Alice sends Bob the hidings of all these polynomials evaluated at `s`  E(L(s)), E(R(s)), E(O(s)), E(H(s))
+1. Bob checks if E(L(s)⋅R(s) - O(s)) = E(T(s)⋅H(s))  \[note: we will discuss how Bob can check an encrypted multiplication when we discuss elliptic curve pairings]
+
+The verifiable blind polynomial evaluation protocol allows Alice to perform step 3, but it doesn't confirm that the polynomials came from a valid assignment of c values. If she doesn't know a valid assignment, she can still produce unrelated polynomials L, R, O and H that will pass the final check. We need to confirm that the coefficients of L are the same as the coefficients of R, O and H. 
+
+
+Let's combine the polynomials into one polynomial:
+
+F = L + X<sup>d+1</sup>⋅R + X<sup>2(d+1)</sup>⋅O
+
+We can do the same trick for the individual polynomials in the QAP:
+
+F<sub>i</sub> = L<sub>i</sub> + X<sup>d+1</sup>⋅R<sub>i</sub> + X<sup>2(d+1)</sup>⋅O<sub>i</sub>
+
+Note that if we sum two of the F<sub>i</sub> values, the individual polynomials sum separately:
+
+F<sub>1</sub> + F<sub>2</sub> = L<sub>1</sub> + L<sub>2</sub> + X<sup>d+1</sup>⋅(R<sub>1</sub> + R<sub>2</sub>) + X<sup>2(d+1)</sup>⋅(O<sub>1</sub> + O<sub>2</sub>)
+
+So if F is a linear combination of the F<sub>i</sub> values, the same coefficients will be used for each of the individual polynomials, which would prove they were produces from an assignment (Bob still needs to check that the last equality holds to prove it is a valid assignment)
+
+So Bob chooses a random β and sends Alice the hidings E(β), E(βF<sup>1</sup>(s)), E(βF<sup>2</sup>(s)), ..., E(βF<sup>m</sup>(s)). If Alice returns a β-pairing she has written F as a linear combination of the F<sub>i</sub> values.
+
+#### Adding zero knowledge
+
+The scheme described does leak some information. At the very least, Bob can check if a putative set of satisfying constants matches the ones that Alice chose.
+
+This can be solved easily by adding a random T-shift to each polynomial:
+* L<sub>z</sub> = L + δ<sub>1</sub>⋅T for a random δ<sub>1</sub>
+* R<sub>z</sub> = R + δ<sub>2</sub>⋅T for a random δ<sub>2</sub>
+* O<sub>z</sub> = O + δ<sub>3</sub>⋅T for a random δ<sub>3</sub>
+
+Since we have added T to every term, if T used to divide L⋅R - O, it will now divide L<sub>z</sub>⋅R<sub>z</sub> - O<sub>z</sub>. The other factor H will also need to be adjusted accordingly, but the proof will still work. However, each polynomial now has a random shift, so no information is revealed.
+
+
+### Elliptic Curves and their pairings
+* This article explains what an elliptic curve group is. I won't bother summarizing it here.
+* Let's denote the group over F<sub>p</sub> (the field of integers mod p) to be G<sub>1</sub>. We will restrict ourselves to situations where G<sub>1</sub> has prime size r
+* The smallest integer k such that r divides p<sup>k</sup> - 1 is the embedding degree of the curve. If it is large enough, the discrete log problem in G<sub>1</sub> is hard.
+* The curve points over the field F<sub>p^k</sub> also form a group. The group clearly contains G<sub>1</sub>. It also contains additional subgroups of order r. Let's select one and call it G<sub>2</sub>.
+* The **multiplicative** group of F<sub>p^k</sub> also contains a subgroup of order r, which we will denote G<sub>T</sub>
+
+* Let's pick generators g and h for G<sub>1</sub> and G<sub>2</sub> respectively. Here we assert the existence of an efficient map called the Tate reduced pairing, which maps a pair of elements from G<sub>1</sub> and G<sub>2</sub> into an element of G<sub>T</sub> with the properties:
+   * Tate(g, h) = **g** for a generator **g** of G<sub>T</sub> (we can map the generators to another generator)
+   * given F<sub>r</sub> elements a,b, Tate(a⋅g, b⋅h) = **g**<sup>ab</sup>.
+
+So we can define three hidings that support addition and multiplication by a scalar (the same way we've already done it):
+* E<sub>1</sub>(x) = x⋅g
+* E<sub>2</sub>(x) = x⋅h
+* E(x) = x⋅**g**
+The Tate pairing gives us one additional power:
+* Given E<sub>1</sub>(x) and E<sub>2</sub>(y), we can compute E(xy). Since these are different groups, we can't perform the operation repeatedly. Instead, we have a one-time move to produce a hiding of the product of two hidden values.
+
+### Non-interactive evaluation
+* The protocol that we've described asks Bob to send Alice various hidings.
+* Ideally, Alice should be able to produce a proof without interaction from Bob.
+* Instead, we settle for a trusted setup procedure, where Bob produces all the hidings once and then publishes them for everyone to use in their own proofs. Importantly, the proofs rely on the assumption that Bob keeps the s, α, β values private. If we are simply going to publish the same set of values for everyone, then it is important that the secret values are destroyed (the toxic waste in the ZCash protocol). In fact, in ZCash, those values (and the hidings) where produced in a multi-party computation to minimize the chance that anyone knows those values.
+* We refer to the shared set of hidings as a Common Reference String (CSR).  
+
+* Now we can modify the polynomial evaluation protocol to be non-interactive:
+   * Bob originally sends Alice E(1), E(s), E(s<sup>2</sup>), ..., E(s<sup>d</sup>) and E(α), E(αs), E(αs<sup>2</sup>), ..., E(αs<sup>d</sup>) for a random α. These are now hardcoded in the CSR so we can skip this step.
+   * Alice computes E(P(s)) and E(αP(s))
+   * Bob originally verifies this by multiplying the first value by α (within the hiding). Now we're trying to prove this to a generic person who doesn't know α. 
+   * We will use the Tate pairing. In this entire protocol:
+      * whenever someone is hiding the left hand side of an α-pair, they should use the E<sub>1</sub> hiding function
+      * whenever someone is hiding the right hand side of an α-pair, they should use the E<sub>2</sub> hiding function
+      * Bob wants to confirm that E<sub>1</sub>(P(s)) E<sub>2</sub>(αP(s)) are the hidings of an α-pair. He computes E(αP(s)) in two different ways and sees if they match:
+         * Tate(E<sub>1</sub>(P(s)), E<sub>2</sub>(α))
+         * Tate(E<sub>1</sub>(1), E<sub>2</sub>(αP(s)))
+      
