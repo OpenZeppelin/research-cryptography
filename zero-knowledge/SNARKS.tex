@@ -1,0 +1,97 @@
+\documentclass[dvipsnames]{beamer}
+\usetheme{Copenhagen}
+
+\usepackage{epigraph}
+\usepackage{xcolor}
+
+\setlength\epigraphwidth{.8\textwidth}
+\setlength\epigraphrule{0pt}
+
+\newcommand{\pub}[1]{\textcolor{blue}{\texttt{#1}}}
+\newcommand{\priv}[1]{\textcolor{brown}{\texttt{#1}}}
+\newcommand{\enc}[1]{\colorbox{RubineRed}{\textcolor{white}{\texttt{#1}}}}
+
+% Add a title page for each section and subsection
+\AtBeginSection[]{
+    \begin{frame}
+        \frametitle{Table of Contents}
+        \tableofcontents[currentsection]
+    \end{frame}
+}
+
+
+\begin{document}
+    \title{SNARKS}
+    \date{}
+
+    \begin{frame}
+        \maketitle
+
+        \epigraph{I ask the fundamental question of rationality: Why do you believe what you believe? What do you think you know and how do you think you know it?}{\textit{Harry Potter\\Harry Potter and the methods of rationality}}
+    \end{frame}
+
+    \section{A simple zkARK}
+
+    \begin{frame}{Setup}
+        \begin{itemize}
+            \item Choose a generator \pub{g} and prime \pub{p}
+            \item Choose a private key \priv{x}
+            \item Calculate the public key \pub{g\priv{$^x$} mod p}
+            \item From now on the notation \enc{x} denotes this ``encryption'' operation
+
+        \end{itemize}
+
+        \begin{block}{}
+            The goal is to \textbf{demonstrate knowledge} of \priv{x} without revealing it.
+        \end{block}
+    \end{frame}
+
+    \begin{frame}{Mathematical tools}
+        \begin{block}{Perfect hiding}
+        If \priv{r} is a secret random value, \pub{\priv{x} + \priv{r} mod n} is perfectly hidden
+        \end{block}
+
+        \begin{block}{Partially homomorphic encryption}
+            \begin{itemize}
+                \item   \enc{a}$^c$ = \pub{(g\priv{$^a$})$^c$ mod p}
+                        \\\hspace{0.8cm}= \pub{g\priv{$^{c\cdot a}$} mod p}
+                        \\\hspace{0.8cm}= \enc{c$\cdot$a}
+                \item   \enc{a} * \enc{b} = \pub{g\priv{$^a$} mod p} * \pub{g\priv{$^b$} mod p}
+                        \\\hspace{1.3cm}= \pub{g\priv{$^{a+b}$} mod p}
+                        \\\hspace{1.3cm}= \enc{a+b}
+            \end{itemize}
+        \end{block}
+    \end{frame}
+
+    \begin{frame}{The Protocol}
+        \begin{itemize}
+            \item \enc{x} is common knowledge.
+            \item Alice claims to know \priv{x}
+        \end{itemize}
+        \vspace{1cm}
+
+        \begin{columns}
+            \begin{column}{0.5\textwidth}
+                \textbf{Alice}
+                \begin{itemize}
+                    \item Generates \priv{r}. Sends \enc{r}
+                    \item[]
+                    \item Sends \pub{\priv{x} + c$\cdot$r}
+                    \item[]
+                \end{itemize}
+            \end{column}
+            \begin{column}{0.5\textwidth}  %%<--- here
+                \textbf{Bob}
+                \begin{itemize}
+                    \item[]
+                    \item Generates and sends \pub{c}
+                    \item[]
+                    \item Calculates \enc{x + c$\cdot$r} ($\times$2)
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+
+\end{document}
+
