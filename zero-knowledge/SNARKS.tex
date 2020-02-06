@@ -1,5 +1,5 @@
 \documentclass[dvipsnames]{beamer}
-\usetheme{Copenhagen}
+\usetheme{Berlin}
 
 \usepackage{epigraph}
 \usepackage{xcolor}
@@ -41,7 +41,25 @@
         \epigraph{I ask the fundamental question of rationality: Why do you believe what you believe? What do you think you know and how do you think you know it?}{\textit{Harry Potter\\Harry Potter and the methods of rationality}}
     \end{frame}
 
-    \section{A simple zkARK}
+    \section{Why?}
+
+    \begin{frame}{Uses of SNARKs}
+        \begin{itemize}
+        \item SNARKs succinctly prove knowledge of arbitrary statements.
+        \item zkSNARKs ensure no additional information is revealed.
+            \item For example, you can prove the mere fact that:
+            \begin{itemize}
+                \item you know the input to a hash function
+                \item you created a valid transaction
+                \item you donated 10\% of your income to charity
+                \item you have enough collateral for a loan
+            \end{itemize}
+        \end{itemize}
+        \qedhere
+    \end{frame}
+
+
+    \section{A zkARK}
 
     \begin{frame}{Setup}
         \begin{itemize}
@@ -112,7 +130,7 @@
         \end{itemize}
     \end{frame}
 
-    \section{Computing in polynomials}
+    \section{Polynomial Computation}
 
     \begin{frame}{Constraints}
         Consider a function that takes a some inputs and performs a computation. We want to write it as a set of constraints of the form:\\
