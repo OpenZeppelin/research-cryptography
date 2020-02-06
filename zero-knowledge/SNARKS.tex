@@ -13,7 +13,7 @@
 
 \newcommand{\pub}[1]{\textcolor{blue}{\texttt{#1}}}
 \newcommand{\priv}[1]{\textcolor{brown}{\texttt{#1}}}
-\newcommand{\enc}[1]{\colorbox{SkyBlue}{\textcolor{white}{\texttt{#1}}}}
+\newcommand{\enc}[1]{\colorbox{SkyBlue!75}{\textcolor{white}{\texttt{#1}}}}
 \newcommand{\encB}[1]{\colorbox{PineGreen}{\textcolor{white}{\texttt{#1}}}}
 \newcommand{\pairing}[3]{e(\enc{#1}, \enc{#2}) $\rightarrow$ \encB{#3}}
 
@@ -45,8 +45,8 @@
 
     \begin{frame}{Uses of SNARKs}
         \begin{itemize}
-        \item SNARKs succinctly prove knowledge of arbitrary statements.
-        \item zkSNARKs ensure no additional information is revealed.
+            \item SNARKs succinctly prove knowledge of arbitrary statements.
+            \item zkSNARKs ensure no additional information is revealed.
             \item For example, you can prove the mere fact that:
             \begin{itemize}
                 \item you know the input to a hash function
@@ -67,7 +67,6 @@
             \item Choose a private key \priv{x}
             \item Calculate the public key \pub{g\priv{$^x$} mod p}
             \item From now on the notation \enc{x} denotes this ``encryption'' operation
-
         \end{itemize}
 
         \begin{block}{}
@@ -82,22 +81,24 @@
 
         \pause
         \begin{block}{Partially homomorphic ``encryption''}
+            \only<-2>{
             \begin{itemize}
-                \item   \enc{a}$^c$ = \pub{(g\priv{$^a$})$^c$ mod p}
-                \\\hspace{0.8cm}= \pub{g\priv{$^{c\cdot a}$} mod p}
-                \\\hspace{0.8cm}= \enc{c$\cdot$a}
-                \pause
-                \item   \enc{a} * \enc{b} = \pub{g\priv{$^a$} mod p} * \pub{g\priv{$^b$} mod p}
-                \\\hspace{1.3cm}= \pub{g\priv{$^{a+b}$} mod p}
-                \\\hspace{1.3cm}= \enc{a+b}
+                \item \enc{a}$^c$ = \pub{(g\priv{$^a$})$^c$ mod p} = \pub{g\priv{$^{c\cdot a}$} mod p}= \enc{c$\cdot$a}
+                \item \enc{a}*\enc{b} = \pub{g\priv{$^a$} mod p} * \pub{g\priv{$^b$} mod p} = \pub{g\priv{$^{a+b}$} mod p}= \enc{a+b}
+            \end{itemize}}
+            \only<3->{
+            \begin{itemize}
+                \item \enc{a}$^c$ = \enc{c$\cdot$a}
+                \item \enc{a}*\enc{b} = \enc{a+b}
             \end{itemize}
+            }
         \end{block}
     \end{frame}
 
     \begin{frame}{The Protocol}
         \begin{itemize}
-            \item \enc{x} is common knowledge.
-            \item Alice claims to know \priv{x}
+            \item[] \enc{x} is common knowledge.
+            \item[] Alice claims to know \priv{x}
         \end{itemize}
         \vspace{1cm}
 
@@ -105,9 +106,9 @@
             \begin{column}{0.5\textwidth}
                 \textbf{Alice}
                 \begin{itemize}
-                    \item Generates \priv{r}. Sends \enc{r}
+                    \item[1.] Generates \priv{r}. Sends \enc{r}
                     \item[]
-                    \item Sends \pub{\priv{x} + c$\cdot$r}
+                    \item[3.] Sends \pub{\priv{x} + c$\cdot$r}
                     \item[]
                 \end{itemize}
             \end{column}
@@ -115,9 +116,9 @@
                 \textbf{Bob}
                 \begin{itemize}
                     \item[]
-                    \item Generates and sends \pub{c}
+                    \item[2.]Generates and sends \pub{c}
                     \item[]
-                    \item Calculates \enc{x + c$\cdot$r} ($\times$2)
+                    \item[4.]Calculates \enc{x + c$\cdot$r} ($\times$2)
                 \end{itemize}
             \end{column}
         \end{columns}
@@ -546,7 +547,7 @@
 
     \begin{frame}{fin}
 
-        {\huge Questions / Comments / Criticisms?}
+    {\huge Questions / Comments / Criticisms?}
     \end{frame}
 
 \end{document}
