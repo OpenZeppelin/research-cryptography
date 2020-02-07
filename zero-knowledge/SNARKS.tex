@@ -49,7 +49,7 @@
             \item zkSNARKs ensure no additional information is revealed.
             \item For example, you can prove the mere fact that:
             \begin{itemize}
-                \item you know the input to a hash function
+                \item you know the input that matches a hash
                 \item you created a valid transaction
                 \item you donated 10\% of your income to charity
                 \item you have enough collateral for a loan
@@ -74,7 +74,7 @@
         \end{block}
     \end{frame}
 
-    \begin{frame}[plain]{Mathematical tools}
+    \begin{frame}{Mathematical tools}
         \begin{block}{Perfect hiding}
             If \priv{r} is a secret random value, \pub{\priv{x} + \priv{r} mod n} is perfectly hidden
         \end{block}
@@ -238,7 +238,7 @@
                 \draw[->] (0,0) -- (15.5,0) node[right] {x};
                 \draw[<->] (0,-5) -- (0,5);
 
-                \draw [smooth,domain=0:15,thick,Bittersweet] plot (\x,{0.01 * \x^3 - 0.15 * \x^2 + 0.1 * \x + 0.9});
+                \draw [smooth,domain=0:15,thick,brown] plot (\x,{0.01 *(\x - 1.5)*(\x - 5)*(\x-13)});
             \end{tikzpicture}\\
             P(x) = a$_0$ + a$_1$x + a$_2$x$^2$ + a$_3$x$^3$
         \end{center}
@@ -301,6 +301,30 @@
         \end{block}
     \end{frame}
 
+    \begin{frame}{Reframing the condition}
+
+        \priv{P}(x) = \priv{H}(x)\pub{Z}(x) where \pub{Z}(x) = (x-1)(x-2)
+        \begin{center}
+            \begin{tikzpicture}[scale=0.4]
+                % axis and grid
+                \draw[step=1,color=gray!30,dashed] (0,-4.5) grid (14.5,4.5);
+                \draw[->] (0,0) -- (15.5,0) node[right] {x};
+                \draw[<->] (0,-5) -- (0,5);
+
+                % \draw [smooth,domain=0:15,thick,Bittersweet] plot (\x,{0.01 * \x^3 - 0.15 * \x^2 + 0.1 * \x + 0.9});
+                \draw [smooth,domain=0:3.6,thick,blue] plot (\x,{(\x - 1)*(\x - 2)}) node[right] {Z(x)};
+                \draw [smooth,domain=0:14.5,thick,brown] plot (\x,{-0.001*(\x - 1)*(\x - 2)*(\x-7)*(\x-13)*(\x - 16.5)}) node[right] {P(x)};
+                \pause
+                \draw [smooth,domain=0:14.5,thick,BrickRed] plot (\x,{0.003*(\x - 1)*(\x - 4)*(\x-8)*(\x-15)}) node[right] {P'(x)};
+            \end{tikzpicture}\\
+        \end{center}
+        \only<2->{
+        \begin{block}{}
+            In practice, a solution at a \textbf{secret} point \priv{s} will suffice
+        \end{block}
+        }
+    \end{frame}
+
     \section{SARKs}
 
     \begin{frame}{Building blocks}
@@ -311,9 +335,9 @@
         \end{itemize}
 
 
-        Note that it lets anyone produce linear combinations of encrypted values.
-
-        We will also make use of a closely related elliptic curve group
+        \begin{block}{}
+        Anyone can produce linear combinations of encrypted values.
+        \end{block}
     \end{frame}
 
     \begin{frame}{Building blocks}
@@ -414,20 +438,6 @@
         \end{center}
     \end{frame}
 
-    \begin{frame}{Simplifying the problem}
-        Recall the QAP:
-        \begin{itemize}
-            \item We have constructed a polynomial equation\\\priv{P}(x) = \priv{L}(x)\priv{R}(x) - \priv{O}(x)
-            \item Someone who knows a satisfying assignment can choose \priv{L}, \priv{R} and \priv{O} such that \priv{P}(1) = 0 and \priv{P}(2) = 0
-        \end{itemize}
-        Re-framing the condition:
-        \begin{itemize}
-            \item \priv{P}(x) = \priv{H}(x)\pub{Z}(x) where \pub{Z}(x) = (x-1)(x-2). \\Note that this is equation holds for all x
-            \item In practice, we only need to demonstrate knowledge of a solution at a \textbf{secret} point \priv{s}.
-            Without knowing \priv{P} or \priv{s}, it is difficult to produce P' and H' such that P'(s) = H'(s)\pub{Z}(s)
-        \end{itemize}
-    \end{frame}
-
     \begin{frame}{Verifying satisfying polynomials}
         \begin{itemize}
             \item The goal is for Alice to demonstrate she knows \priv{L}, \priv{R}, \priv{O} and \priv{H}.
@@ -435,7 +445,7 @@
             \item Recall \priv{L} = \priv{c$_1$}\pub{L$_1$} + \priv{c$_2$}\pub{L$_2$} + \priv{c$_3$}\pub{L$_3$} + \priv{c$_4$}\pub{L$_4$} +\priv{c$_5$}\pub{L$_5$}
             \item So Bob should send \enc{L$_1$(s)}, \enc{$\beta\cdot$L$_1$(s)}, \enc{L$_2$(s)}, \enc{$\beta\cdot$L$_2$(s)}, ...
             \item Then Alice can return a putative \enc{L(s)} (and \enc{$\beta\cdot$L(s)})
-            \item Similarly, if Bob sends \enc{R$_1$(s)}, \enc{$\gamma\cdot$3R$_1$(s)}, ..., \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, ..., Alice can return a putative \enc{R(s)} and \enc{O(s)}
+            \item Similarly, if Bob sends \enc{3R$_1$(s)}, \enc{$\gamma\cdot$3R$_1$(s)}, ..., \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, ..., Alice can return a putative \enc{R(s)} and \enc{O(s)}
         \end{itemize}
     \end{frame}
 
@@ -444,8 +454,10 @@
         \begin{itemize}
             \item Bob sends \enc{(L$_1$+R$_1$+O$_1$)(s)}, \enc{$\epsilon$\cdot(L$_1$+R$_1$+O$_1$)(s)}, ...
             \item Alice returns \enc{L(s)+R(s)+O(s)}
-            \item Bob checks that this value matches \enc{L(s)}+\enc{R(s)}+\enc{O(s)}
-            \item The logic here is that if the individual polynomials were constructed using different coefficients, Alice could not recreate their sum as a linear combination of the (\pub{L$_i$}+\pub{R$_i$}+\pub{O$_i$})(\priv{s}) values
+            \item The logic here is that Alice has now returned:\\
+            \enc{c$_1$(L$_1$+R$_1$+O$_1$)(s) + c$_2$(L$_2$+R$_2$+O$_2$)(s) + ...} = \\
+            \enc{(c$_1$L$_1$+c$_2$L$_2$+...)+(c$_1$R$_1$+c$_2$R$_2$+...)+(c$_1$O$_1$+c$_2$O$_2$+...)}=\\
+            \enc{L(s)+R(s)+O(s)}
         \end{itemize}
     \end{frame}
 
@@ -465,7 +477,9 @@
         \begin{block}{}
             Define a pairing from the elliptic curve group to a related group
             \begin{center}
-                \pairing{a}{b}{ab}
+                \pairing{a}{b}{ab}\\
+                \vspace{0.2cm}
+                e(a$\cdot$G, b$\cdot$G) $\rightarrow$ (ab)$\cdot$G$_t$
             \end{center}
         \end{block}
 
@@ -518,11 +532,11 @@
 
     \begin{frame}{Non-interactive verification}
         \begin{itemize}
-            \item[] In the interactive protocol, Bob verifies shifts directly: given putative \enc{H(x)} and \enc{$\alpha \cdot$H(x)} values, he calculates \priv{$\alpha$}\enc{H(x)} to see if it matches \enc{$\alpha \cdot$H(x)}
+            \item[] In the interactive protocol, Bob verifies shifts directly: given putative \enc{H(s)} and \enc{$\alpha \cdot$H(s)} values, he calculates \priv{$\alpha$}\enc{H(s)} to see if it matches \enc{$\alpha \cdot$H(s)}
             \item[] However, a generic verifier can compare the elliptic curve pairings:
             \begin{itemize}
-                \item \pairing{$\alpha$}{H(x)}{$\alpha \cdot$H(x)}
-                \item \pairing{1}{$\alpha \cdot$H(x)}{$\alpha \cdot$H(x)}
+                \item \pairing{$\alpha$}{H(s)}{$\alpha \cdot$H(s)}
+                \item \pairing{1}{$\alpha \cdot$H(s)}{$\alpha \cdot$H(s)}
             \end{itemize}
         \end{itemize}
     \end{frame}
@@ -555,8 +569,8 @@
         \begin{itemize}
             \item Consider Alice's encrypted polynomial\\
             \enc{L(s)} = \enc{(c$_1$L$_1$ + c$_2$L$_2$ + c$_3$L$_3$ + c$_4$L$_4$ + c$_5$L$_5$)(s)}
-            \item If \enc{$\beta\cdot$L$_5$} is not published then the \enc{c$_5$L$_5$} term cannot exist
-            \item The verifier can just add \enc{90L$_5$} to complete the polynomial
+            \item If \enc{$\beta\cdot$L$_5$(s)} is not published then the \enc{c$_5$L$_5$} term cannot exist
+            \item The verifier can just add \enc{90L$_5$(s)} to complete the polynomial
             \item This effectively forces the constraint \pub{c$_5$} = 90
         \end{itemize}
     \end{frame}
