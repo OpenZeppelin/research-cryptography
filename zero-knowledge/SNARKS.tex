@@ -186,14 +186,14 @@
         \priv{\begin{bmatrix}
                   c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
         \end{bmatrix}}
-        -
+        =
         \pub{\begin{bmatrix}
                  0 \\ 0 \\ 0 \\ 1 \\ 0
         \end{bmatrix}}
         \priv{\begin{bmatrix}
                   c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
         \end{bmatrix}}
-        = 0\\
+        \\
 
         \vspace{0.6cm}
         c$_4$ = c$_2$ $\cdot$ c$_2$
@@ -215,17 +215,33 @@
         \priv{\begin{bmatrix}
                   c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
         \end{bmatrix}}
-        -
+        =
         \pub{\begin{bmatrix}
                  0 \\ 0 \\ 0 \\ 0 \\ 1
         \end{bmatrix}}
         \priv{\begin{bmatrix}
                   c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
         \end{bmatrix}}
-        = 0\\
+        \\
 
         \vspace{0.6cm}
         c$_5$ = (c$_2$ + c$_3$ + c$_4$) $\cdot$ (3c$_1$ + c$_3$ + c$_4$)
+    \end{frame}
+
+    \begin{frame}{Polynomials Recap}
+        I'm going to use the term ``polynomial" a lot. A quick recap:
+
+        \begin{center}
+            \begin{tikzpicture}[scale=0.4]
+                % axis and grid
+                \draw[step=1,color=gray!30,dashed] (0,-4.5) grid (14.5,4.5);
+                \draw[->] (0,0) -- (15.5,0) node[right] {x};
+                \draw[<->] (0,-5) -- (0,5);
+
+                \draw [smooth,domain=0:15,thick,Bittersweet] plot (\x,{0.01 * \x^3 - 0.15 * \x^2 + 0.1 * \x + 0.9});
+            \end{tikzpicture}\\
+            P(x) = a$_0$ + a$_1$x + a$_2$x$^2$ + a$_3$x$^3$
+        \end{center}
     \end{frame}
 
     \begin{frame}{Quadratic Arithmetic Program}
@@ -237,7 +253,7 @@
                 % axis and grid
                 \draw[step=1,color=gray!30,dashed] (0,-1.5) grid (2.5,2.5);
                 \draw[->] (0,0) -- (2.5,0);
-                \draw[->] (0,-1.5) -- (0,2.5);
+                \draw[<->] (0,-1.5) -- (0,2.5);
 
                 \foreach \x/\xtext in {1/1, 2/2}
                 \draw[shift={(\x,0)}] (0pt,2pt) -- (0pt,-2pt) node[below] {$\xtext$};
