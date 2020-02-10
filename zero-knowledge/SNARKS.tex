@@ -6,6 +6,7 @@
 \usepackage{amsmath}
 \usepackage{tikz}
 \usepackage{tikzsymbols}
+\usetikzlibrary{positioning}
 
 
 \setlength\epigraphwidth{.8\textwidth}
@@ -79,9 +80,23 @@
             If \priv{r} is a secret random value, \pub{\priv{x} + \priv{r} mod n} is perfectly hidden
         \end{block}
 
-        \pause
+        \only<-1>{
+        \begin{center}
+            \begin{tikzpicture}
+                \draw (0,0) circle (1cm);
+                \node (x) at (35:1cm) {\pgfuseplotmark{*}} ;
+                \node [right of = x, node distance=0.3cm] {\priv{x}};
+                \draw[->, dashed] (35:1.2cm) arc (35:260:1.2cm);
+                \node at (120:1.4cm) {\priv{r}};
+
+            \end{tikzpicture}
+        \end{center}
+        }
+
+        \only<2->{
         \begin{block}{Partially homomorphic ``encryption''}
             \only<-2>{
+
             \begin{itemize}
                 \item \enc{a}$^c$ = \pub{(g\priv{$^a$})$^c$ mod p} = \pub{g\priv{$^{c\cdot a}$} mod p}= \enc{c$\cdot$a}
                 \item \enc{a}*\enc{b} = \pub{g\priv{$^a$} mod p} * \pub{g\priv{$^b$} mod p} = \pub{g\priv{$^{a+b}$} mod p}= \enc{a+b}
@@ -93,6 +108,7 @@
             \end{itemize}
             }
         \end{block}
+        }
     \end{frame}
 
     \begin{frame}{The Protocol}
@@ -118,6 +134,7 @@
                     \item[]
                     \item[2.]Generates and sends \pub{c}
                     \item[]
+                    \pause
                     \item[4.]Calculates \enc{x + c$\cdot$r} ($\times$2)
                 \end{itemize}
             \end{column}
@@ -137,7 +154,7 @@
         Consider a function that takes a some inputs and performs a computation. We want to write it as a set of constraints of the form:\\
 
         \begin{center}
-            \priv{c$_n$} = ($\sum_{i=1}^{n-1}$ \pub{r$_i$} \priv{c$_i$}) $\cdot$ ($\sum_{j=1}^{n-1}$ \pub{s$_j$} \priv{c$_j$})\\
+            \priv{c$_n$} = ($\sum_{i=1}^{n-1}$ \pub{u$_i$} \priv{c$_i$}) $\cdot$ ($\sum_{j=1}^{n-1}$ \pub{v$_j$} \priv{c$_j$})\\
             \vspace{0.5cm}
             eg. \priv{c$_5$} = (\priv{c$_1$} + \pub{3}\priv{c$_3$}) $\cdot$ (\pub{2}\priv{c$_1$} + \priv{c$_2$} + \priv{c$_4$})
         \end{center}
@@ -245,7 +262,7 @@
     \end{frame}
 
     \begin{frame}{Quadratic Arithmetic Program}
-        Another formulation: represent all constraints with polynomials\\
+        Another formulation: represent all constraints with polynomials.\\
         Start by representing each constraint as a value on the x-axis and then create some basis polynomials to isolate each constraint\\
 
         \begin{center}
@@ -281,8 +298,8 @@
         \end{align*}\\
 
         \begin{center}
-            \priv{L} = $\sum_{i=1}^{5}$ \priv{c$_i$}\pub{r$_i$L$_i$} \hspace{0.3cm}
-            \priv{R} = $\sum_{i=1}^{5}$ \priv{c$_i$}\pub{s$_i$R$_i$} \hspace{0.3cm}
+            \priv{L} = $\sum_{i=1}^{5}$ \priv{c$_i$}\pub{u$_i$L$_i$} \hspace{0.3cm}
+            \priv{R} = $\sum_{i=1}^{5}$ \priv{c$_i$}\pub{v$_i$R$_i$} \hspace{0.3cm}
             \priv{O} = $\sum_{i=1}^{5}$ \priv{c$_i$}\pub{O$_i$}
         \end{center}
     \end{frame}
@@ -336,7 +353,7 @@
 
 
         \begin{block}{}
-        Anyone can produce linear combinations of encrypted values.
+            Anyone can produce linear combinations of encrypted values.
         \end{block}
     \end{frame}
 
@@ -442,21 +459,21 @@
         \begin{itemize}
             \item The goal is for Alice to demonstrate she knows \priv{L}, \priv{R}, \priv{O} and \priv{H}.
             \item We already have a way to verify polynomial \priv{H}. For the others, we want to ensure it is a \textit{satisfying} polynomial
-            \item Recall \priv{L} = \priv{c$_1$}\pub{L$_1$} + \priv{c$_2$}\pub{L$_2$} + \priv{c$_3$}\pub{L$_3$} + \priv{c$_4$}\pub{L$_4$} +\priv{c$_5$}\pub{L$_5$}
-            \item So Bob should send \enc{L$_1$(s)}, \enc{$\beta\cdot$L$_1$(s)}, \enc{L$_2$(s)}, \enc{$\beta\cdot$L$_2$(s)}, ...
+            \item Recall \priv{L} = \priv{c$_1$}\pub{u$_1$L$_1$} + \priv{c$_2$}\pub{u$_2$L$_2$} + \priv{c$_3$}\pub{u$_3$L$_3$} + \priv{c$_4$}\pub{u$_4$L$_4$} +\priv{c$_5$}\pub{u$_5$L$_5$}
+            \item So Bob sends \enc{u$_1$L$_1$(s)}, \enc{$\beta\cdot$u$_1$L$_1$(s)}, \enc{u$_2$L$_2$(s)}, ...
             \item Then Alice can return a putative \enc{L(s)} (and \enc{$\beta\cdot$L(s)})
-            \item Similarly, if Bob sends \enc{3R$_1$(s)}, \enc{$\gamma\cdot$3R$_1$(s)}, ..., \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, ..., Alice can return a putative \enc{R(s)} and \enc{O(s)}
+            \item Similarly, if Bob sends \enc{v$_1$R$_1$(s)}, \enc{$\gamma\cdot$v$_1$R$_1$(s)}, ..., \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, ..., Alice can return a putative \enc{R(s)} and \enc{O(s)}
         \end{itemize}
     \end{frame}
 
     \begin{frame}{Verifying simultaneous satisfying polynomials}
         The described solution does not actually verify that the returned \enc{L(s)}, \enc{R(s)} and \enc{O(s)} values use the same coefficients. To achieve this, we can add another step to the protocol:
         \begin{itemize}
-            \item Bob sends \enc{(L$_1$+R$_1$+O$_1$)(s)}, \enc{$\epsilon$\cdot(L$_1$+R$_1$+O$_1$)(s)}, ...
+            \item Bob sends \enc{(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, \enc{$\epsilon$\cdot(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, ...
             \item Alice returns \enc{L(s)+R(s)+O(s)}
             \item The logic here is that Alice has now returned:\\
-            \enc{c$_1$(L$_1$+R$_1$+O$_1$)(s) + c$_2$(L$_2$+R$_2$+O$_2$)(s) + ...} = \\
-            \enc{(c$_1$L$_1$+c$_2$L$_2$+...)+(c$_1$R$_1$+c$_2$R$_2$+...)+(c$_1$O$_1$+c$_2$O$_2$+...)}=\\
+            \enc{c$_1$(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s) + c$_2$(u$_2$L$_2$+u$_2$R$_2$+O$_2$)(s) + ...} = \\
+            \enc{(c$_1$u$_1$L$_1$+c$_2$u$_2$L$_2$+...)+(c$_1$v$_1$R$_1$+c$_2$v$_2$R$_2$+...)+(c$_1$O$_1$+c$_2$O$_2$+...)}=\\
             \enc{L(s)+R(s)+O(s)}
         \end{itemize}
     \end{frame}
@@ -468,7 +485,7 @@
             \item Bob chooses a private point \priv{s}
             \item Alice sends \enc{L(s)}, \enc{R(s)}, \enc{O(s)} and \enc{H(s)} using the known procedure, which convinces Bob that all polynomials are legitimately constructed.
             \item  Lastly, Bob should confirm that\\
-            \enc{L(s)} * \enc{R(s)} - \enc{O(s)} = \enc{Z(s)} * \enc{H(s)}
+            \enc{L(s) * R(s) - O(s)} = \enc{Z(s) * H(s)}
             \\He can't check this directly because our ``encryption" scheme does not support multiplication.
         \end{itemize}
     \end{frame}
@@ -490,9 +507,9 @@
     \end{frame}
 
     \begin{frame}{Checking the polynomial equation}
-        Bob has putative values for each term and he wants to confirm:\\
+        Bob has putative polynomials and he wants to confirm:\\
         \begin{center}
-            \enc{L(s)} * \enc{R(s)} = \enc{Z(s)} * \enc{H(s)} + \enc{O(s)}
+            \enc{L(s) * R(s)} = \enc{Z(s) * H(s) + O(s)}
         \end{center}
 
         \begin{itemize}
@@ -521,9 +538,9 @@
         \begin{itemize}
             \item Generate \priv{s} and publish encrypted powers: \enc{1}, \enc{s}, \enc{s$^2$}, ...
             \item Publish lots of polynomials evaluated at \priv{s}:\\
-            \enc{L$_i$(s)}, \enc{R$_i$(s)}, \enc{O$_i$(s)}, \enc{(L$_i$+R$_i$+O$_i$)(s)}, \enc{Z(s)}
-            \item Generate \priv{$\alpha$}, \priv{$\beta$}, \priv{$\gamma$} and publish encrypted shifts:\\
-            \enc{$\alpha \cdot$s$^i$}, \enc{$\beta \cdot$L$_i$(s)}, \enc{$\gamma \cdot$R$_i$(s)}, \enc{$\delta \cdot$O$_i$(s)}, \enc{$\epsilon \cdot$(L$_i$+R$_i$+O$_i$)(s)}
+            \enc{u$_i$L$_i$(s)}, \enc{v$_i$R$_i$(s)}, \enc{O$_i$(s)}, \enc{(u$_i$L$_i$+v$_i$R$_i$+O$_i$)(s)}, \enc{Z(s)}
+            \item Generate \priv{$\alpha$}, \priv{$\beta$}, \priv{$\gamma$}, \priv{$\delta$}, \priv{$\epsilon$} and publish encrypted shifts:\\
+            \enc{$\alpha \cdot$s$^i$}, \enc{$\beta \cdot$u$_i$L$_i$(s)}, \enc{$\gamma \cdot$v$_i$R$_i$(s)}, \enc{$\delta \cdot$O$_i$(s)}, \enc{$\epsilon \cdot$(u$_i$L$_i$+v$_i$R$_i$+O$_i$)(s)}
             \item Everyone else is in the same position as Alice - they could use the same values for their proof.
             \item If Bob deletes the private values, all proofs are non-interactive
             \item As a security measure, we generate them collaboratively
@@ -568,9 +585,9 @@
 
         \begin{itemize}
             \item Consider Alice's encrypted polynomial\\
-            \enc{L(s)} = \enc{(c$_1$L$_1$ + c$_2$L$_2$ + c$_3$L$_3$ + c$_4$L$_4$ + c$_5$L$_5$)(s)}
-            \item If \enc{$\beta\cdot$L$_5$(s)} is not published then the \enc{c$_5$L$_5$} term cannot exist
-            \item The verifier can just add \enc{90L$_5$(s)} to complete the polynomial
+            \enc{L(s)} = \enc{(c$_1$u$_1$L$_1$+c$_2$u$_2$L$_2$+c$_3$u$_3$L$_3$+c$_4$u$_4$L$_4$+c$_5$u$_5$L$_5$)(s)}
+            \item If \enc{$\beta\cdot$u$_5$L$_5$(s)} is missing then the \enc{c$_5$u$_5$L$_5$} term cannot exist
+            \item The verifier adds \enc{90u$_5$L$_5$(s)} to complete the polynomial
             \item This effectively forces the constraint \pub{c$_5$} = 90
         \end{itemize}
     \end{frame}
