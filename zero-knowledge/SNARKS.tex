@@ -183,8 +183,19 @@
             \end{column}
         \end{columns}
 
+        \only<-1>{
         \vspace{1cm}
         If the expected output (c$_5$) is 90 then \priv{[1, 2, 3, 4, 90]} is a valid witness.
+        }
+
+        \only<2->{
+        \begin{block}{Add conditionals with binary constants}
+            \begin{itemize}
+                \item c$_x$ = c$_x$ $\cdot$ c$_x$ // enforce binary constraint
+                \item c$_y$ = c$_x$c$_a$ + (1 - c$_x$)c$_b$  // c$_y$ = c$_x$ ? c$_a$ : c$_b$
+            \end{itemize}
+        \end{block}
+        }
     \end{frame}
 
     \begin{frame}{Rank 1 Constraint System}
