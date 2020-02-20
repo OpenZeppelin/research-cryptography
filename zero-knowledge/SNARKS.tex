@@ -17,6 +17,11 @@
 \newcommand{\enc}[1]{\colorbox{SkyBlue!75}{\textcolor{white}{\texttt{#1}}}}
 \newcommand{\encB}[1]{\colorbox{PineGreen}{\textcolor{white}{\texttt{#1}}}}
 \newcommand{\pairing}[3]{e(\enc{#1}, \enc{#2}) $\rightarrow$ \encB{#3}}
+\newcommand{\bOne}[0]{{\textcolor{LimeGreen}{b_1(x)}}}
+\newcommand{\bTwo}[0]{{\textcolor{Plum}{b_2(x)}}}
+% in common text scenarios, the subscript needs to be wrapped in a math environment
+\newcommand{\bOneMathSub}[0]{{\textcolor{LimeGreen}{b$_1$(x)}}}
+\newcommand{\bTwoMathSub}[0]{{\textcolor{Plum}{b$_2$(x)}}}
 
 
 \newcommand{\code}[1]{\texttt{#1}}
@@ -124,7 +129,7 @@
                 \begin{itemize}
                     \item[1.] Generates \priv{r}. Sends \enc{r}
                     \item[]
-                    \item[3.] Sends \pub{\priv{x} + c$\cdot$r}
+                    \item[3.] Sends \pub{\priv{x} + c$\cdot$\priv{r}}
                     \item[]
                 \end{itemize}
             \end{column}
@@ -296,15 +301,54 @@
     \end{frame}
 
     \begin{frame}{Quadratic Arithmetic Program}
+        Encode the \textbf{terms on the left of the multiplication} as a polynomial equation\\
+        \vspace{0.3cm}
+
+        \begin{columns}
+            \begin{column}{0.5\textwidth}
+                \pub{\begin{bmatrix}
+                         0 \\ 1 \\ 0 \\ 0 \\ 0
+                \end{bmatrix}}
+                \priv{\begin{bmatrix}
+                          c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
+                \end{bmatrix}}
+                $\rightarrow$
+                \begin{pmatrix}
+                    \pub{0} \\ \priv{c$_2$}\pub{1}\bOne \\ \pub{0} \\ \pub{0} \\ \pub{0}
+                \end{pmatrix}
+            \end{column}
+            \begin{column}{0.5\textwidth}
+                \pub{\begin{bmatrix}
+                         0 \\ 1 \\ 1 \\ 1 \\ 0
+                \end{bmatrix}}
+                \priv{\begin{bmatrix}
+                          c$_1$\\ c$_2$\\ c$_3$\\ c$_4$\\ c$_5$
+                \end{bmatrix}}
+                $\rightarrow$
+                \begin{pmatrix}
+                    \pub{0} \\ \priv{c$_2$}\pub{1}\bTwo \\ \priv{c$_3$}\pub{1}\bTwo \\ \priv{c$_4$}\pub{1}\bTwo \\ \pub{0}
+                \end{pmatrix}
+            \end{column}
+        \end{columns}
+        \begin{center}
+            \priv{L} = \priv{c$_2$}(\pub{1}\bOneMathSub + \pub{1}\bTwoMathSub) + \priv{c$_3$}\pub{1}\bTwoMathSub + \priv{c$_4$}\pub{1}\bTwoMathSub \\
+            \priv{R} = \ldots \\
+            \priv{O} = \ldots \\
+        \end{center}
+    \end{frame}
+
+
+
+    \begin{frame}{Quadratic Arithmetic Program}
         Encode the constraints as a polynomial equation\\
 
         \begin{align*}
             c_4 &= c_2 \cdot c_2\\
             c_5 &= (c_2 + c_3 + c_4) \cdot (3c_1 + c_3 + c_4)\\
             \\
-            \textcolor{LimeGreen}{b_1(x)} &= R_2 = O_4\\
-            \textcolor{Plum}{b_2(x)} &= L_3 = L_4 = R_1 = R_3 = R_4 = O_5\\
-            \textcolor{LimeGreen}{b_1(x)} + \textcolor{Plum}{b_2(x)} &= L_2\\
+            \bOne &= R_2 = O_4\\
+            \bTwo &= L_3 = L_4 = R_1 = R_3 = R_4 = O_5\\
+            \bOne + \bTwo &= L_2\\
             0 &= L_1 = L_5 = R_5 = O_1 = O_2 = O_3\\
         \end{align*}\\
 
@@ -316,11 +360,11 @@
     \end{frame}
 
     \begin{frame}{Completed QAP}
-        \textcolor{LimeGreen}{b$_1$(x)} = 2 - x \\
-        \textcolor{Plum}{b$_2$(x)} = x - 1\\
-        \priv{L} = \priv{c$_2$}\textcolor{LimeGreen}{b$_1$(x)} + (\priv{c$_2$} + \priv{c$_3$} + \priv{c$_4$})\textcolor{Plum}{b$_2$(x)} \\
-        \priv{R} = \priv{c$_2$}\textcolor{LimeGreen}{b$_1$(x)} + (3\priv{c$_1$} + \priv{c$_3$} + \priv{c$_4$})\textcolor{Plum}{b$_2$(x)} \\
-        \priv{O} = \priv{c$_4$}\textcolor{LimeGreen}{b$_1$(x)} + \priv{c$_5$}\textcolor{Plum}{b$_2$(x)}\\
+        \bOneMathSub = 2 - x \\
+        \bTwoMathSub = x - 1\\
+        \priv{L} = \priv{c$_2$}\bOneMathSub + (\priv{c$_2$} + \priv{c$_3$} + \priv{c$_4$})\bTwoMathSub \\
+        \priv{R} = \priv{c$_2$}\bOneMathSub + (3\priv{c$_1$} + \priv{c$_3$} + \priv{c$_4$})\bTwoMathSub \\
+        \priv{O} = \priv{c$_4$}\bOneMathSub + \priv{c$_5$}\bTwoMathSub\\
         \vspace{0.5cm}
 
         \begin{block}{}
@@ -419,8 +463,8 @@
             \begin{column}{0.6\textwidth}
                 \textbf{Bob}
                 \begin{itemize}
-                    \item Generates \priv{$\alpha$}, \priv{a}, \priv{b}, \priv{c}, ...
-                    \item Sends (\enc{a}, \enc{$\alpha \cdot$a}, \enc{b}, \enc{$\alpha \cdot$b}, ...)
+                    \item Generates \priv{$\alpha$}, \priv{a}, \priv{b}, \priv{c}, \ldots
+                    \item Sends (\enc{a}, \enc{$\alpha \cdot$a}, \enc{b}, \enc{$\alpha \cdot$b}, \ldots)
                     \item[]
                     \item[]
                     \item[] \item Confirms returned pair is valid
@@ -430,7 +474,7 @@
         \begin{center}
             How can she do this?\\
             \pause
-            Alice returned a linear combination of \enc{a}, \enc{b}, \enc{c}, ...
+            Alice returned a linear combination of \enc{a}, \enc{b}, \enc{c}, \ldots
         \end{center}
     \end{frame}
 
@@ -453,7 +497,7 @@
                 \textbf{Bob}
                 \begin{itemize}
                     \item Generates \priv{$\alpha$}, \priv{s}
-                    \item Sends (\enc{1}, \enc{$\alpha$}, \enc{s}, \enc{$\alpha \cdot$s}, \enc{s$^2$}, ...)
+                    \item Sends (\enc{1}, \enc{$\alpha$}, \enc{s}, \enc{$\alpha \cdot$s}, \enc{s$^2$}, \ldots)
                     \item[]
                     \item[]
                     \item[] \item Confirms returned pair is valid
@@ -471,20 +515,20 @@
             \item The goal is for Alice to demonstrate she knows \priv{L}, \priv{R}, \priv{O} and \priv{H}.
             \item We already have a way to verify polynomial \priv{H}. For the others, we want to ensure it is a \textit{satisfying} polynomial
             \item Recall \priv{L} = \priv{c$_1$}\pub{u$_1$L$_1$} + \priv{c$_2$}\pub{u$_2$L$_2$} + \priv{c$_3$}\pub{u$_3$L$_3$} + \priv{c$_4$}\pub{u$_4$L$_4$} +\priv{c$_5$}\pub{u$_5$L$_5$}
-            \item So Bob sends \enc{u$_1$L$_1$(s)}, \enc{$\beta\cdot$u$_1$L$_1$(s)}, \enc{u$_2$L$_2$(s)}, ...
+            \item So Bob sends \enc{u$_1$L$_1$(s)}, \enc{$\beta\cdot$u$_1$L$_1$(s)}, \enc{u$_2$L$_2$(s)}, \ldots
             \item Then Alice can return a putative \enc{L(s)} (and \enc{$\beta\cdot$L(s)})
-            \item Similarly, if Bob sends \enc{v$_1$R$_1$(s)}, \enc{$\gamma\cdot$v$_1$R$_1$(s)}, ..., \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, ..., Alice can return a putative \enc{R(s)} and \enc{O(s)}
+            \item Similarly, if Bob sends \enc{v$_1$R$_1$(s)}, \enc{$\gamma\cdot$v$_1$R$_1$(s)}, \ldots, \enc{O$_1$(s)}, \enc{$\delta\cdot$O$_1$(s)}, \ldots, Alice can return a putative \enc{R(s)} and \enc{O(s)}
         \end{itemize}
     \end{frame}
 
     \begin{frame}{Verifying simultaneous satisfying polynomials}
         The described solution does not actually verify that the returned \enc{L(s)}, \enc{R(s)} and \enc{O(s)} values use the same coefficients. To achieve this, we can add another step to the protocol:
         \begin{itemize}
-            \item Bob sends \enc{(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, \enc{$\epsilon$\cdot(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, ...
+            \item Bob sends \enc{(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, \enc{$\epsilon$\cdot(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s)}, \ldots
             \item Alice returns \enc{L(s)+R(s)+O(s)}
             \item The logic here is that Alice has now returned:\\
-            \enc{c$_1$(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s) + c$_2$(u$_2$L$_2$+u$_2$R$_2$+O$_2$)(s) + ...} = \\
-            \enc{(c$_1$u$_1$L$_1$+c$_2$u$_2$L$_2$+...)+(c$_1$v$_1$R$_1$+c$_2$v$_2$R$_2$+...)+(c$_1$O$_1$+c$_2$O$_2$+...)}=\\
+            \enc{c$_1$(u$_1$L$_1$+v$_1$R$_1$+O$_1$)(s) + c$_2$(u$_2$L$_2$+u$_2$R$_2$+O$_2$)(s) + \ldots} = \\
+            \enc{(c$_1$u$_1$L$_1$+c$_2$u$_2$L$_2$+\ldots)+(c$_1$v$_1$R$_1$+c$_2$v$_2$R$_2$+\ldots)+(c$_1$O$_1$+c$_2$O$_2$+\ldots)}=\\
             \enc{L(s)+R(s)+O(s)}
         \end{itemize}
     \end{frame}
@@ -547,7 +591,7 @@
     \begin{frame}{Non-interactive proofs}
         Recall that in the interactive protocol, Bob needs to:
         \begin{itemize}
-            \item Generate \priv{s} and publish encrypted powers: \enc{1}, \enc{s}, \enc{s$^2$}, ...
+            \item Generate \priv{s} and publish encrypted powers: \enc{1}, \enc{s}, \enc{s$^2$}, \ldots
             \item Publish lots of polynomials evaluated at \priv{s}:\\
             \enc{u$_i$L$_i$(s)}, \enc{v$_i$R$_i$(s)}, \enc{O$_i$(s)}, \enc{(u$_i$L$_i$+v$_i$R$_i$+O$_i$)(s)}, \enc{Z(s)}
             \item Generate \priv{$\alpha$}, \priv{$\beta$}, \priv{$\gamma$}, \priv{$\delta$}, \priv{$\epsilon$} and publish encrypted shifts:\\
