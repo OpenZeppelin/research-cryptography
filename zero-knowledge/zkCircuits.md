@@ -92,3 +92,40 @@ The verifier can scale these by powers of x appropriately to recover t(x).
 
 
 ### Laurent polynomials
+
+Let t(X) = sum\[ t<sub>i</sub>X<sup>i</sup> ] where i can be negative (ranges from -d<sub>1</sub> to d<sub>2</sub>) and t<sub>0</sub> = 0 (no constant term).
+
+We can accommodate these additions in the same scheme by:
+* grouping the terms into n-term polynomials as before, scaled by the appropriate powers of X
+* note that we start with negative powers of X
+* we scale the positive-power terms with X<sup>1</sup>, X<sup>n+1</sup>, ... (instead of starting with X<sup>0</sup>) to account for the fact that there is no constant term
+* scale the last U polynomial by X<sup>2</sup> (instead of X) to compensate
+
+### Evaluation protocol
+
+#### Commitment
+* we want to commit to a Laurent polynomial t(X) with powers of X ranging from -m<sub>1</sub>n to m<sub>2</sub>n and no constant term (ie. can be grouped into sub-polynomials of degree n-1).
+* pick blinding values u<sub>1</sub> to u<sub>n-1</sub> and reframe the polynomials with the blinding factors (adding another sub-polynomial)
+* choose a random τ value per sub-polynomial and commit each one individually (including the new **u** one)
+
+#### Polynomial evaluation
+* Note that each term in the full polynomial t(X) can be thought of as the product of:
+   * a coefficient t<sub>i,j</sub>
+   * a power of x in the sub-polynomial (up to n-1)
+   * a shift of some power of x to move the sub-polynomial to the right place in the full polynomial
+* we can group these terms by their index in the sub-polynomial (n-1 summations).
+* once x is chosen, we can substitute it for all the shifts but NOT the X value in the sub-polynomials, creating a single polynomial of degree n-1.
+* note that each coefficient is masked with one or more u values
+* we reveal these coefficients, but the mask ensures that the original t coefficients are still hidden
+* we also treat the τ values as the coefficients of a polynomial in X and reveal the result of this polynomial evaluated at x (ie. sum\[ τ<sub>i</sub>x<sup>i</sup> where i ranges from from -m<sub>1</sub>n to m<sub>2</sub>n except i=0 ])
+
+#### Verification
+* the verifier has a series of commitments to the sub-polynomials.
+* they can scale each commitment by powers of the chosen point x so these become commitments to the individual terms in t(x) \[still grouped in the sub-polynomials]. Note that this process inadvertently scales the random τ values as well.
+* they can now multiply the commitments together, creating a single commitment where:
+   * the random value is the sum of the individual random values scaled by powers of x
+   * the i-th component of the commitment is the scaled sum of all the i-th coefficients across all sub-polyomials
+* this commitment should be equivalent to a commitment of the values revealed in the polynomial evaluation step
+* if they match, the verifier believes the polynomial evaluation step was done correctly (it matches the original commitment)
+* the verifier has coefficients of an n-1 degree polynomial P(X) that evaluates to the larger polynomial t(x) at x.
+* they calculate P(x) directly to compute t(x)
