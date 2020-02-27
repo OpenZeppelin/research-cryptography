@@ -129,3 +129,9 @@ We can accommodate these additions in the same scheme by:
 * if they match, the verifier believes the polynomial evaluation step was done correctly (it matches the original commitment)
 * the verifier has coefficients of an n-1 degree polynomial P(X) that evaluates to the larger polynomial t(x) at x.
 * they calculate P(x) directly to compute t(x)
+
+
+#### Security properties
+* Completeness: the scheme will succeed successfully if carried out honestly
+* Honest Verifier Zero Knowledge: given any v and x, it is possible to retrospectively construct a laurent polynomial and a commitment/evaluation to match. In other words, a given output does not rule out any possible input (so it reveals zero knowledge).
+* If we evaluate/verify t(x) at enough points, we will recover t(X).
